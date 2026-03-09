@@ -1,0 +1,38 @@
+// Author: Manasses Souza 24285421
+// Date: March 2 2026
+// guardian_service.proto
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.generated.guardian.grpc";
+option java_outer_classname = "GuardianProto";
+
+package guardian;
+
+service Guardian {
+	
+	// 
+	rpc MonitorSafety(MonitorSafetyReq) returns (MonitorSafetyRes); 
+	
+	// 
+	rpc VerifyZoneSafety(stream VerifyZoneSafetyReq) returns (strxeam VerifyZoneSafetyRes);
+}
+
+// *** Unary - MonitorSafety
+message MonitorSafetyReq {
+	string location_id = 1; // site location id
+}
+
+message MonitorSafetyRes {
+	string ppe_protocol = 1; // required ppe list
+}
+
+// *** Bi-Directional Stream - VerifyZoneSafety
+message VerifyZoneSafetyReq {
+	string current_zone_id = 1;
+}
+
+message VerifyZoneSafetyRes {
+	string zone_instruction = 1; // string for ex: warning: high-voltage nearby
+}

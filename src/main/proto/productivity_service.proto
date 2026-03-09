@@ -1,0 +1,53 @@
+// Author: Manasses Souza 24285421
+// Date: March 2 2026
+// productivity_service.proto
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.generated.productivity.grpc";
+option java_outer_classname = "ProductivityProto";
+
+package productivity;
+
+service Productivity {
+	
+	// client sends how much they've worked and gets back a confirmation
+	rpc ReportTaskProgress(ReportTaskProgressReq) returns (ReportTaskProgressRes); 
+	
+	// based on location, server pushes live information of workers 
+	rpc StreamProductivity(StreamProductivityReq) returns (stream StreamProductivityRes);
+
+	// uploads worker time-logs and gets back a summary for payroll
+	rpc VerifyHours(stream VerifyHoursReq) returns (VerifyHoursRes);
+}
+
+// *** Unary - ReportTaskProgress
+message ReportTaskProgressReq {
+	string task_id = 1;
+	int32 percent_complete = 2;
+}
+
+message ReportTaskProgressRes {
+	string acknowledge = 1;
+}
+
+// *** Server Stream - StreamProductivity
+message StreamProductivityReq {
+	string site_id = 1;
+}
+
+message StreamProductivityRes {
+	string worker_update = 1; // name, status, and current task
+}
+
+
+
+// *** Client Stream - VerifyHours
+message VerifyHoursReq {
+	int32 minutes_worked = 1; // time chuncks like 5-minute interval, but I will do 5-sec for academic purposes
+}
+
+message VerifyHoursRes {
+	int32 total_hours = 1; // again, this will be reduced to seconds for academic purposes
+}

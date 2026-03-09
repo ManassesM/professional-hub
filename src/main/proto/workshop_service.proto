@@ -1,0 +1,46 @@
+// Author: Manasses Souza 24285421
+// Date: March 2 2026
+// WorkshopService.proto
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.generated.workshop.grpc";
+option java_outer_classname = "WorkshopProto";
+
+package workshop;
+
+service Workshop {
+		 																									
+	// client sends their information and server registers worker at the start of a training session
+	rpc CheckInWorker(CheckInWorkerReq) returns (CheckInWorkerRes); 
+	
+	// server streams back material as the lecturer progresses
+	rpc GetWorkerNotes(GetWorkerNotesReq) returns (stream GetWorkerNotesRes);
+
+	// client streams tasks logs for final evaluation
+	rpc SendLabWork(stream SendLabWorkReq) returns (SendLabWorkRes);
+	
+	// client streams their signal and gets back whether or not they're within the range of the device 
+	rpc RangeCheck(stream RangeCheckReq) returns (stream RangeCheckRes);
+}
+
+// *** Unary - CheckInWorker
+message CheckInWorkerReq {
+	string worker_id = 1;
+	string workshop_id = 2; // module id
+}
+
+message CheckInWorkerRes {
+	string module_name = 1; // title of the course
+	int32 workshop_credits = 2;
+}
+
+// *** Server Stream - GetWorkerNotes
+message GetWorkerNotesReq {
+	string workshop_id = 1;
+}
+
+message GetWorkerNotesRes {
+	string note_content = 1; // url or text instructions for ex
+}
