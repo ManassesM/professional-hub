@@ -55,10 +55,10 @@ message SendLabWorkRes {
 }
 
 // *** Bi-Directional Stream - RangeCheck
-
 enum  ProximityStatus {
 	DISCONNECTED = 0;
 	IN_RANGE = 1;
+	INVALID = 2;
 }
 
 message RangeCheckReq {
@@ -66,5 +66,6 @@ message RangeCheckReq {
 }
 
 message RangeCheckRes {
-	ProximityStatus proximity_status = 2;
+	ProximityStatus proximity_status = 1;
+	string status_message = 2;
 }
