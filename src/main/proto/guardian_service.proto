@@ -16,7 +16,7 @@ service Guardian {
 	rpc MonitorSafety(MonitorSafetyReq) returns (MonitorSafetyRes); 
 	
 	// 
-	rpc VerifyZoneSafety(stream VerifyZoneSafetyReq) returns (strxeam VerifyZoneSafetyRes);
+	rpc VerifyZoneSafety(stream VerifyZoneSafetyReq) returns (stream VerifyZoneSafetyRes);
 }
 
 // *** Unary - MonitorSafety

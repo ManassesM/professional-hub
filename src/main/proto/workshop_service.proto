@@ -44,3 +44,27 @@ message GetWorkerNotesReq {
 message GetWorkerNotesRes {
 	string note_content = 1; // url or text instructions for ex
 }
+
+// *** Client Stream - SendLabWork
+message SendLabWorkReq {
+	string work_snippet = 1; // data 
+}
+
+message SendLabWorkRes {
+	int32 submission_summary = 1; // total items received
+}
+
+// *** Bi-Directional Stream - RangeCheck
+
+enum  ProximityStatus {
+	DISCONNECTED = 0;
+	IN_RANGE = 1;
+}
+
+message RangeCheckReq {
+	float signal_strength = 1; // dBm value for ex
+}
+
+message RangeCheckRes {
+	ProximityStatus proximity_status = 2;
+}
