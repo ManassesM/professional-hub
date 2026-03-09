@@ -6,6 +6,10 @@ import com.generated.workshop.grpc.CheckInWorkerReq;
 import com.generated.workshop.grpc.CheckInWorkerRes;
 import com.generated.workshop.grpc.GetWorkerNotesReq;
 import com.generated.workshop.grpc.GetWorkerNotesRes;
+import com.generated.workshop.grpc.RangeCheckReq;
+import com.generated.workshop.grpc.RangeCheckRes;
+import com.generated.workshop.grpc.SendLabWorkReq;
+import com.generated.workshop.grpc.SendLabWorkRes;
 import com.generated.workshop.grpc.WorkshopGrpc.WorkshopImplBase;
 
 import dystsys.ca.professional_hub.db.MockDB;
@@ -61,6 +65,57 @@ public class WorkshopServiceImpl extends WorkshopImplBase {
 		
 		responseObserver.onCompleted();
 	} // getWorkerNotes
+	
+	// client stream call
+	@Override
+	public StreamObserver<SendLabWorkReq> sendLabWork(StreamObserver<SendLabWorkRes> responseObserver) {
+		
+		return new StreamObserver<SendLabWorkReq>() {
+			int submssion_summary = 0; // counter for summary
+			
+			@Override
+			public void onNext(SendLabWorkReq request) {
+				submssion_summary++;
+				System.out.printf("Received task:%n%s", request.getWorkSnippet());
+			}
+			
+			@Override
+			public void onError(Throwable t) {
+				t.printStackTrace();
+			}
+			
+			@Override
+			public void onCompleted() {
+				SendLabWorkRes response = SendLabWorkRes.newBuilder().setSubmssionSummary(submssion_summary).build();
+				responseObserver.onNext(response);
+				responseObserver.onCompleted();
+			}
+		};
+	} // sendLabWork
+	
+	@Override
+	public StreamObserver<RangeCheckReq> rangeCheck(StreamObserver<RangeCheckRes> responseObserver) {
+		return new StreamObserver<RangeCheckReq>() {
+			
+			@Override
+			public void onNext(RangeCheckReq value) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onError(Throwable t) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onCompleted() {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+	}
 	
 	
 } // WorkshopServiceImpl

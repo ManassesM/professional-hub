@@ -51,7 +51,7 @@ message SendLabWorkReq {
 }
 
 message SendLabWorkRes {
-	int32 submission_summary = 1; // total items received
+	int32 submssion_summary = 1; // total items received
 }
 
 // *** Bi-Directional Stream - RangeCheck
