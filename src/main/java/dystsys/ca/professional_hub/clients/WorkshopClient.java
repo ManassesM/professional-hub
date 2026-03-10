@@ -61,7 +61,7 @@ public class WorkshopClient {
 	}
     } // main
 
-    // --> unary call
+    // --> unary helper **************************************************
     private static void checkInWorkerCall(String workerId, String workshopId) {
 	System.out.print("----------checkInWorkerCall----------\n");
 	CheckInWorkerReq request = CheckInWorkerReq.newBuilder().setWorkerId(workerId).setWorkshopId(workshopId).build(); // builds and
@@ -78,7 +78,7 @@ public class WorkshopClient {
 
     } // checkInWorkerCall
 
-    // --> server stream call
+    // --> server stream helper **************************************************
     private static void getWorkerNotesCall(String workshopId) {
 	System.out.print("\n----------getWorkerNotesCall----------\n");
 	GetWorkerNotesReq request = GetWorkerNotesReq.newBuilder().setWorkshopId(workshopId).build();
@@ -100,7 +100,7 @@ public class WorkshopClient {
 	}
     } // getWorkerNotesCall
 
-    // --> client stream call
+    // --> client stream helper **************************************************
     private static void sendLabWorkCall(List<String> workSnippets) {
 	System.out.print("\n----------sendLabWorkCall----------\n");
 	CountDownLatch latch = new CountDownLatch(1);
@@ -128,7 +128,7 @@ public class WorkshopClient {
 
 	StreamObserver<SendLabWorkReq> requestObserver = asyncStub.sendLabWork(responseObserver);
 
-	// client sends data
+	// client sends helper **************************************************
 	for (String workSnippet : workSnippets) {
 	    SendLabWorkReq request = SendLabWorkReq.newBuilder().setWorkSnippet(workSnippet).build();
 	    requestObserver.onNext(request);
@@ -143,7 +143,7 @@ public class WorkshopClient {
 	}
     } // sendLabWorkCall
 
-    // --> bi-directional stream call
+    // --> bi-directional stream helper **************************************************
     private static void rangeCheckCall(List<Float> signalStrength) {
 	System.out.print("\n----------rangeCheckCall----------\n");
 	CountDownLatch latch = new CountDownLatch(1);
@@ -191,5 +191,4 @@ public class WorkshopClient {
 	    e.printStackTrace();
 	}
     } // rangeCheckCall
-
 } // WorkshopClient
