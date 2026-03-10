@@ -1,4 +1,4 @@
-package dystsys.ca.professional_hub.server;
+package dystsys.ca.professional_hub.service;
 
 import java.util.List;
 
@@ -104,7 +104,6 @@ public class WorkshopServiceImpl extends WorkshopImplBase {
 
 			@Override
 			public void onNext(RangeCheckReq request) {
-
 				float signal_strength = request.getSignalStrength();
 				System.out.printf("Received signal: %f", signal_strength);
 
