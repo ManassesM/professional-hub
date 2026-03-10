@@ -35,6 +35,9 @@ public class WorkshopClient {
 		// unary helper call
 		checkInWorkerCall(workerId, workshopId);
 		
+		// server stream helper call
+		getWorkerNotesCall(workshopId);
+		
 		channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 	} // main
 	
@@ -43,7 +46,22 @@ public class WorkshopClient {
 		CheckInWorkerReq request = CheckInWorkerReq.newBuilder().setWorkerId(workerId).setWorkshopId(workshopId).build(); // builds and sends request
 		CheckInWorkerRes response = stub.checkInWorker(request); // gets response
 		
-		System.out.printf("Worker %s checked in!%nModule name: %s%nCredits: %d", workerId, response.getModuleName(), response.getWorkshopCredits());
+		System.out.printf("Worker %s checked in!%nModule name: %s%nCredits: %d%n", workerId, response.getModuleName(), response.getWorkshopCredits());
 	} // checkInWorkerCall
+	
+	// server stream call
+	private static void getWorkerNotesCall(String workshopId) throws InterruptedException {
+		GetWorkerNotesReq request = GetWorkerNotesReq.newBuilder().setWorkshopId(workshopId).build();
+		
+		Iterator<GetWorkerNotesRes> response = stub.getWorkerNotes(request);
+		
+		System.out.printf("Receiving materials for workshop [ %s ]:%n", workshopId);
+		while(response.hasNext()) {
+			Thread.sleep(1000); // added to make it look "realistic"
+			GetWorkerNotesRes res = response.next();			
+			String note_content = res.getNoteContent();
+			System.out.printf("CONTENT [ %s ]%n", note_content);
+		}
+	} // getWorkerNotesCall
 	
 } // WorkshopClient
