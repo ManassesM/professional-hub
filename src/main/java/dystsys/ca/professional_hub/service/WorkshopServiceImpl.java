@@ -40,7 +40,8 @@ public class WorkshopServiceImpl extends WorkshopImplBase {
 		}
 
 		System.out.printf("Checking in worker: %s for workshop %s%n", workerId, workshopId);
-		CheckInWorkerRes response = CheckInWorkerRes.newBuilder().setModuleName("Advanced Safety Protocols").setWorkshopCredits(10).build();
+		CheckInWorkerRes response = CheckInWorkerRes.newBuilder().setModuleName("Advanced Safety Protocols")
+				.setWorkshopCredits(10).build();
 
 		responseObserver.onNext(response);
 		responseObserver.onCompleted();
@@ -79,9 +80,15 @@ public class WorkshopServiceImpl extends WorkshopImplBase {
 
 			@Override
 			public void onNext(SendLabWorkReq request) {
-				submssion_summary++;
-				System.out.printf("Received task:%n%s", request.getWorkSnippet());
-			}
+				try {
+					submssion_summary++;
+					System.out.printf("Received task:%n%s%n", request.getWorkSnippet());
+
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			} // onNext
 
 			@Override
 			public void onError(Throwable t) {
