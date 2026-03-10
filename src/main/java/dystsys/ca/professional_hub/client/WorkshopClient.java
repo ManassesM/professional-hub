@@ -51,6 +51,9 @@ public class WorkshopClient {
 			// --> client stream helper call
 			sendLabWorkCall(MockDB.WORK_SNIPPETS);
 
+			// --> bi-directional stream helper call
+			rangeCheckCall(MockDB.SIGNAL_STRENGTH);
+
 			// waits for client to finish its tasks
 			channel.shutdown().awaitTermination(1, TimeUnit.MINUTES);
 		} catch (InterruptedException e) {
@@ -139,5 +142,54 @@ public class WorkshopClient {
 			e.printStackTrace();
 		}
 	} // sendLabWorkCall
+
+	// --> bi-directional stream call
+	private static void rangeCheckCall(List<Float> signalStrength) {
+		System.out.print("\n----------rangeCheckCall----------\n");
+		CountDownLatch latch = new CountDownLatch(1);
+
+		StreamObserver<RangeCheckRes> responseObserver = new StreamObserver<RangeCheckRes>() {
+
+			@Override
+			public void onNext(RangeCheckRes response) {
+				try {
+					ProximityStatus proximity_status = response.getProximityStatus();
+					String status_message = response.getStatusMessage();
+					System.out.printf("Signal received!%nProximity Status: %s%nStatus: %s", proximity_status, status_message);
+
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+			@Override
+			public void onError(Throwable t) {
+				System.err.printf("An error has occurred!%n***%s***%n", t.getMessage());
+				latch.countDown();
+			}
+
+			@Override
+			public void onCompleted() {
+				// TODO Auto-generated method stub
+				latch.countDown();
+			}
+		};
+		
+		StreamObserver<RangeCheckReq> requestObserver = asyncStub.rangeCheck(responseObserver);
+		
+		for (Float signal : signalStrength) {
+			RangeCheckReq request = RangeCheckReq.newBuilder().setSignalStrength(signal).build();
+			requestObserver.onNext(request);
+		}
+		requestObserver.onCompleted();
+
+		try {
+			// waits for client to finish sending data
+			latch.await(1, TimeUnit.MINUTES);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	} // rangeCheckCall
 
 } // WorkshopClient

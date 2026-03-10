@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class MockDB {
-
+	
 	// ***** mock for CheckInWorker *****
 	// workershop_id
 	public static final Map<String, List<String>> WORKSHOP_NOTES = Map.of("WS-001",
@@ -32,10 +32,15 @@ public class MockDB {
 
 	// worker_id
 	public static final Set<String> REGISTERED_WORKERS = Set.of("W-1001", "W-1002", "W-1003", "W-1004");
-
+	
 	// work_snippets
-	public static final List<String> WORK_SNIPPETS = Arrays.asList("Module A: Initialized safety protocols.",
-			"Module B: Calibrated workshop sensors to 0.05 precision.",
-			"Module C: Completed material stress test report.", "Module D: Final synchronization with local hub.");
-
+	public static final List<String> WORK_SNIPPETS = Arrays.asList(
+		    "Module A: Initialized safety protocols.",
+		    "Module B: Calibrated workshop sensors to 0.05 precision.",
+		    "Module C: Completed material stress test report.",
+		    "Module D: Final synchronization with local hub."
+		);
+	
+	// signal_strength
+	public static final List<Float> SIGNAL_STRENGTH = Arrays.asList(-45.5f, -75.0f, -85.2f, -10.0f, 0.25f);
 }
