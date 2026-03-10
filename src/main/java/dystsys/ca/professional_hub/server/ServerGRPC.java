@@ -3,6 +3,7 @@ package dystsys.ca.professional_hub.server;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import dystsys.ca.professional_hub.core.AppConfig;
 import dystsys.ca.professional_hub.services.ProductivityServiceImpl;
 import dystsys.ca.professional_hub.services.WorkshopServiceImpl;
 import io.grpc.Server;
@@ -14,7 +15,7 @@ public class ServerGRPC {
 	ProductivityServiceImpl productivityService = new ProductivityServiceImpl();
 
 	try {
-	    int port = 50051;
+	    int port = AppConfig.SERVER_PORT;
 	    Server server = ServerBuilder.forPort(port).addService(workshopService).addService(productivityService).build();
 	    server.start();
 	    System.out.printf("Server listening on port: %d", port);

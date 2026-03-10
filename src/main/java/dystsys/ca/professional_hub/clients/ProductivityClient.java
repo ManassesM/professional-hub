@@ -8,6 +8,7 @@ import com.generated.productivity.grpc.ProductivityGrpc.ProductivityStub;
 import com.generated.productivity.grpc.ReportTaskProgressReq;
 import com.generated.productivity.grpc.ReportTaskProgressRes;
 
+import dystsys.ca.professional_hub.core.AppConfig;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -24,7 +25,7 @@ public class ProductivityClient {
     // **** main method **************************************************
     public static void main(String[] args) {
 
-	ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051).usePlaintext().build();
+	ManagedChannel channel = ManagedChannelBuilder.forAddress(AppConfig.SERVER_HOST, AppConfig.SERVER_PORT).usePlaintext().build();
 
 	stub = ProductivityGrpc.newBlockingStub(channel);
 	asyncStub = ProductivityGrpc.newStub(channel);

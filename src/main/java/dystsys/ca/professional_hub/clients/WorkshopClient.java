@@ -18,7 +18,8 @@ import com.generated.workshop.grpc.WorkshopGrpc;
 import com.generated.workshop.grpc.WorkshopGrpc.WorkshopBlockingStub;
 import com.generated.workshop.grpc.WorkshopGrpc.WorkshopStub;
 
-import dystsys.ca.professional_hub.db.MockDB;
+import dystsys.ca.professional_hub.core.AppConfig;
+import dystsys.ca.professional_hub.core.MockDB;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
@@ -36,7 +37,7 @@ public class WorkshopClient {
     // *** main method will call helper methods which calls the server
     public static void main(String[] args) {
 
-	ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051).usePlaintext().build();
+	ManagedChannel channel = ManagedChannelBuilder.forAddress(AppConfig.SERVER_HOST, AppConfig.SERVER_PORT).usePlaintext().build();
 
 	stub = WorkshopGrpc.newBlockingStub(channel);
 	asyncStub = WorkshopGrpc.newStub(channel);
@@ -155,9 +156,9 @@ public class WorkshopClient {
 		try {
 		    ProximityStatus proximity_status = response.getProximityStatus();
 		    String status_message = response.getStatusMessage();
-		    System.out.printf("Signal received!%nProximity Status: %s%nStatus: %s", proximity_status, status_message);
+		    System.out.printf("Signal received!%nProximity Status: %s%nStatus: %s%n", proximity_status, status_message);
 
-		    Thread.sleep(2000);
+		    Thread.sleep(1500);
 		} catch (InterruptedException e) {
 		    e.printStackTrace();
 		}

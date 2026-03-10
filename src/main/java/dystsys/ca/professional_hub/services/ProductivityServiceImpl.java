@@ -3,6 +3,9 @@ package dystsys.ca.professional_hub.services;
 import java.util.List;
 
 import com.generated.productivity.grpc.ProductivityGrpc.ProductivityImplBase;
+
+import dystsys.ca.professional_hub.core.MockDB;
+
 import com.generated.productivity.grpc.ReportTaskProgressReq;
 import com.generated.productivity.grpc.ReportTaskProgressRes;
 import com.generated.productivity.grpc.StreamProductivityReq;
@@ -10,7 +13,6 @@ import com.generated.productivity.grpc.StreamProductivityRes;
 import com.generated.productivity.grpc.VerifyHoursReq;
 import com.generated.productivity.grpc.VerifyHoursRes;
 
-import dystsys.ca.professional_hub.db.MockDB;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 

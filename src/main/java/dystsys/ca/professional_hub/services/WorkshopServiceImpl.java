@@ -13,7 +13,7 @@ import com.generated.workshop.grpc.SendLabWorkReq;
 import com.generated.workshop.grpc.SendLabWorkRes;
 import com.generated.workshop.grpc.WorkshopGrpc.WorkshopImplBase;
 
-import dystsys.ca.professional_hub.db.MockDB;
+import dystsys.ca.professional_hub.core.MockDB;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
@@ -110,7 +110,7 @@ public class WorkshopServiceImpl extends WorkshopImplBase {
 	    @Override
 	    public void onNext(RangeCheckReq request) {
 		float signal_strength = request.getSignalStrength();
-		System.out.printf("Received signal: %f", signal_strength);
+		System.out.printf("Received signal: %f%n", signal_strength);
 
 		if (signal_strength <= -80) {
 		    // signal is too weak
