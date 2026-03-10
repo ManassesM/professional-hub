@@ -41,8 +41,6 @@ message StreamProductivityRes {
 	string worker_update = 1; // name, status, and current task
 }
 
-
-
 // *** Client Stream - VerifyHours
 message VerifyHoursReq {
 	int32 minutes_worked = 1; // time chuncks like 5-minute interval, but I will do 5-sec for academic purposes

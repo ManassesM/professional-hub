@@ -3,7 +3,7 @@ package dystsys.ca.professional_hub.server;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import dystsys.ca.professional_hub.service.WorkshopServiceImpl;
+import dystsys.ca.professional_hub.services.WorkshopServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
