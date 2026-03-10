@@ -40,7 +40,7 @@ public class WorkshopServiceImpl extends WorkshopImplBase {
 		}
 
 		System.out.printf("Checking in worker: %s for workshop %s%n", workerId, workshopId);
-		CheckInWorkerRes response = CheckInWorkerRes.newBuilder().setModuleName("").setWorkshopCredits(10).build();
+		CheckInWorkerRes response = CheckInWorkerRes.newBuilder().setModuleName("Advanced Safety Protocols").setWorkshopCredits(10).build();
 
 		responseObserver.onNext(response);
 		responseObserver.onCompleted();
