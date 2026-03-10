@@ -13,6 +13,7 @@ import com.generated.workshop.grpc.WorkshopGrpc.WorkshopStub;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 
 public class WorkshopClient {
 
@@ -43,25 +44,38 @@ public class WorkshopClient {
 	
 	// unary call
 	private static void checkInWorkerCall(String workerId, String workshopId) {
+		System.out.print("----------checkInWorkerCall----------\n");
 		CheckInWorkerReq request = CheckInWorkerReq.newBuilder().setWorkerId(workerId).setWorkshopId(workshopId).build(); // builds and sends request
-		CheckInWorkerRes response = stub.checkInWorker(request); // gets response
+		try {
+			
+			CheckInWorkerRes response = stub.checkInWorker(request); // gets response			
+			System.out.printf("Worker %s checked in!%nModule name: %s%nCredits: %d%n", workerId, response.getModuleName(), response.getWorkshopCredits());
 		
-		System.out.printf("Worker %s checked in!%nModule name: %s%nCredits: %d%n", workerId, response.getModuleName(), response.getWorkshopCredits());
+		} catch (RuntimeException e) {
+			System.out.printf("An error has occurred!%n***%s***%n", e.getMessage());
+		}
+		
 	} // checkInWorkerCall
 	
 	// server stream call
 	private static void getWorkerNotesCall(String workshopId) throws InterruptedException {
+		System.out.print("\n----------getWorkerNotesCall----------\n");
 		GetWorkerNotesReq request = GetWorkerNotesReq.newBuilder().setWorkshopId(workshopId).build();
 		
 		Iterator<GetWorkerNotesRes> response = stub.getWorkerNotes(request);
 		
-		System.out.printf("Receiving materials for workshop [ %s ]:%n", workshopId);
+		System.out.printf("Receiving materials for workshop [ %s ]:%n%n", workshopId);
 		while(response.hasNext()) {
 			Thread.sleep(1000); // added to make it look "realistic"
-			GetWorkerNotesRes res = response.next();			
-			String note_content = res.getNoteContent();
-			System.out.printf("CONTENT [ %s ]%n", note_content);
+			try {
+				
+				GetWorkerNotesRes res = response.next();			
+				String note_content = res.getNoteContent();
+				System.out.printf("CONTENT [ %s ]%n", note_content);				
+			
+			} catch (RuntimeException e) {
+				System.out.printf("An error has occurred!%n***%s***%n", e.getMessage());
+			}
 		}
 	} // getWorkerNotesCall
-	
 } // WorkshopClient
