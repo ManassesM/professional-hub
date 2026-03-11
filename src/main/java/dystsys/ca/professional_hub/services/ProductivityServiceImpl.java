@@ -78,7 +78,7 @@ public class ProductivityServiceImpl extends ProductivityImplBase {
 		    int minutes_worked = request.getMinutesWorked();
 		    total_minutes += minutes_worked;
 		    
-		    System.out.printf("Time received!%nMinutes worked: [%d]%nTotal minutes: [%d]", minutes_worked, total_minutes);
+		    System.out.printf("Time received!%nMinutes worked: [%d]%nTotal minutes: [%d]%n", minutes_worked, total_minutes);
 		    Thread.sleep(3000);
 		} catch (InterruptedException e) {
 		    e.printStackTrace();

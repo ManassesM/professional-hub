@@ -65,4 +65,22 @@ public class MockDB {
 	    List.of("Kelly Scott - Active - Phase 1: Electrical grid baseline established.",
 		    "Liam Adams - Active - Phase 2: Transformer maintenance completed.",
 		    "Mia Evans - On Site - Phase 3: Grid stability verification successful."));
+    
+    // ppe_protocol
+    public static final Map<String, String> PPE_PROTOCOLS = Map.of(
+	    "LOC-001", "Hard hat, safety glasses, steel-toed boots.",
+	    "LOC-002", "Respirator, chemical-resistant gloves, apron.",
+	    "LOC-003", "High-visibility vest, ear protection, hard hat.",
+	    "LOC-004", "Full-body harness, tether, non-slip footwear.",
+	    "LOC-005", "Arc flash suit, insulated gloves, face shield."
+	);
+    
+    // zone_instruction
+    public static final Map<String, String> ZONE_INSTRUCTIONS = Map.of(
+	    "ZONE-RED", "CRITICAL: Oxygen levels low. Evacuate immediately.",
+	    "ZONE-BLUE", "CAUTION: Wet floors. Use non-slip footwear.",
+	    "ZONE-YELLOW", "NOTICE: High-traffic area. Watch for forklifts.",
+	    "ZONE-GREEN", "SAFE: No active hazards detected.",
+	    "ZONE-ORANGE", "WARNING: Elevated temperature. Limit exposure to 15 mins."
+	);
 }

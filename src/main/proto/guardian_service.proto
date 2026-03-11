@@ -12,10 +12,10 @@ package guardian;
 
 service Guardian {
 	
-	// 
+	// client sends location and gets back a safety protocol
 	rpc MonitorSafety(MonitorSafetyReq) returns (MonitorSafetyRes); 
 	
-	// 
+	// client streams zones id and gets back a stream of instructions based on them
 	rpc VerifyZoneSafety(stream VerifyZoneSafetyReq) returns (stream VerifyZoneSafetyRes);
 }
 
