@@ -43,7 +43,7 @@ message StreamProductivityRes {
 
 // *** Client Stream - VerifyHours
 message VerifyHoursReq {
-	int32 minutes_worked = 1; // time chuncks like 5-minute interval, but I will do 5-sec for academic purposes
+	int32 minutes_worked = 1; // time chunks like 5-minute interval, but I will do 5-sec for academic purposes
 }
 
 message VerifyHoursRes {
