@@ -172,7 +172,6 @@ public class WorkshopClient {
 
 	    @Override
 	    public void onCompleted() {
-		// TODO Auto-generated method stub
 		latch.countDown();
 	    }
 	};

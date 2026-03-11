@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import dystsys.ca.professional_hub.core.AppConfig;
+import dystsys.ca.professional_hub.services.GuardianServiceImpl;
 import dystsys.ca.professional_hub.services.ProductivityServiceImpl;
 import dystsys.ca.professional_hub.services.WorkshopServiceImpl;
 import io.grpc.Server;
@@ -13,10 +14,12 @@ public class ServerGRPC {
     public static void main(String[] args) {
 	WorkshopServiceImpl workshopService = new WorkshopServiceImpl();
 	ProductivityServiceImpl productivityService = new ProductivityServiceImpl();
+	GuardianServiceImpl guardianServiceImpl = new GuardianServiceImpl();
 
 	try {
 	    int port = AppConfig.SERVER_PORT;
-	    Server server = ServerBuilder.forPort(port).addService(workshopService).addService(productivityService).build();
+	    Server server = ServerBuilder.forPort(port).addService(workshopService).addService(productivityService)
+		    .addService(guardianServiceImpl).build();
 	    server.start();
 	    System.out.printf("Server listening on port: %d", port);
 
