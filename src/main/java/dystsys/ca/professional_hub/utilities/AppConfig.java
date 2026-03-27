@@ -1,4 +1,4 @@
-package dystsys.ca.professional_hub.core;
+package dystsys.ca.professional_hub.utilities;
 
 public class AppConfig {
 

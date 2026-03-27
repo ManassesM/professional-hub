@@ -1,4 +1,4 @@
-package dystsys.ca.professional_hub.core;
+package dystsys.ca.professional_hub.database;
 
 import java.util.Arrays;
 import java.util.List;

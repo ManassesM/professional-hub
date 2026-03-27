@@ -6,7 +6,7 @@ import com.generated.guardian.grpc.MonitorSafetyRes;
 import com.generated.guardian.grpc.VerifyZoneSafetyReq;
 import com.generated.guardian.grpc.VerifyZoneSafetyRes;
 
-import dystsys.ca.professional_hub.core.MockDB;
+import dystsys.ca.professional_hub.database.MockDB;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
