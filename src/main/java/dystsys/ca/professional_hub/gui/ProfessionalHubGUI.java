@@ -27,6 +27,8 @@ import com.generated.workshop.grpc.CheckInWorkerReq;
 import com.generated.workshop.grpc.CheckInWorkerRes;
 import com.generated.workshop.grpc.GetWorkerNotesReq;
 import com.generated.workshop.grpc.GetWorkerNotesRes;
+import com.generated.workshop.grpc.RangeCheckReq;
+import com.generated.workshop.grpc.RangeCheckRes;
 import com.generated.workshop.grpc.SendLabWorkReq;
 import com.generated.workshop.grpc.SendLabWorkRes;
 
@@ -43,19 +45,24 @@ public class ProfessionalHubGUI extends JFrame {
 	private JTabbedPane tabbedPane;
 	private JTextPane resultPane;
 
-	// Workshop fields
+	// *****Workshop fields
 	private JTextField workerIdField;
 	private JTextField workshopIdField;
 	private JTextField getNotesWorkshopIdField;
 	private JTextField labSnippetField;
-
+	private JTextField signalField;
 	private JButton checkInButton;
 	private JButton getNotesButton;
 	private JButton prepareSendLabButton;
 	private JButton sendLabSnippetButton;
 	private JButton doneLabButton;
+	private JButton prepareRangeButton;
+	private JButton sendSignalButton;
+	private JButton doneRangeButton;
 
-	private StreamObserver<SendLabWorkReq> labRequestObserver; // this is needed for send and done buttons
+	// needed for send and done buttons
+	private StreamObserver<SendLabWorkReq> labRequestObserver;
+	private StreamObserver<RangeCheckReq> rangeRequestObserver;
 
 	public ProfessionalHubGUI() {
 		hubClient = new ProfessionalHubClient();
@@ -142,10 +149,10 @@ public class ProfessionalHubGUI extends JFrame {
 				TitledBorder.TOP, null, null));
 
 		// ---------- cheat code field ----------
-		JLabel lblClientCheat = new JLabel("Module A: Initialized safety protocols.");
-		lblClientCheat.setForeground(Color.RED);
-		lblClientCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
-		client_streaming.add(lblClientCheat);
+		JLabel lblCliCheat = new JLabel("Type in any set of String");
+		lblCliCheat.setForeground(Color.RED);
+		lblCliCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
+		client_streaming.add(lblCliCheat);
 		// ----------------------------------------
 
 		client_streaming.add(new JLabel("Work Snippet"));
@@ -155,7 +162,7 @@ public class ProfessionalHubGUI extends JFrame {
 
 		prepareSendLabButton = new JButton("Prepare Client Stream");
 		sendLabSnippetButton = new JButton("Send Snippet");
-		doneLabButton = new JButton("Done (Finish Stream)");
+		doneLabButton = new JButton("Finish Stream");
 
 		client_streaming.add(prepareSendLabButton);
 		client_streaming.add(sendLabSnippetButton);
@@ -164,12 +171,27 @@ public class ProfessionalHubGUI extends JFrame {
 		workshopPanel.add(client_streaming);
 
 		// *****BI-DI-STREAM section
-		// TODO:
+		JPanel bi_directional = 	new JPanel();
+		bi_directional.setBorder(new TitledBorder(null, "BI-DI-STREAM", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		
+		// ---------- cheat code field ----------
+		JLabel lblBiCheat = new JLabel("Try: -45.5, -85.2, 0.25");
+		lblBiCheat.setForeground(Color.RED);
+		lblBiCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
+		bi_directional.add(lblBiCheat);
+		// ----------------------------------------
+
+		bi_directional.add(new JLabel("Signal Strength"));
+        signalField = new JTextField(); signalField.setColumns(15); bi_directional.add(signalField);
+        prepareRangeButton = new JButton("Prepare Bi-Di Stream");
+        sendSignalButton = new JButton("Send Signal");
+        doneRangeButton = new JButton("Finish Stream");
+        bi_directional.add(prepareRangeButton); bi_directional.add(sendSignalButton); bi_directional.add(doneRangeButton);
+        
+        workshopPanel.add(bi_directional);
 
 		// ***************tabs***************
 		tabbedPane.addTab("Workshop", workshopPanel);
-
-		// TODO:
 		tabbedPane.addTab("Productivity", new JPanel());
 		tabbedPane.addTab("Guardian", new JPanel());
 
@@ -187,11 +209,18 @@ public class ProfessionalHubGUI extends JFrame {
 		getContentPane().add(splitPane, BorderLayout.CENTER);
 
 		// ***************action listeners***************
+		// --- unary
 		checkInButton.addActionListener(this::checkInWorkerButtonActionPerformed);
+		// --- server-stream
 		getNotesButton.addActionListener(this::getWorkerNotesButtonActionPerformed);
+		// --- client-stream
 		prepareSendLabButton.addActionListener(this::prepareSendLabButtonActionPerformed);
 		sendLabSnippetButton.addActionListener(this::sendLabSnippetButtonActionPerformed);
 		doneLabButton.addActionListener(this::doneLabButtonActionPerformed);
+		// bi-directional stream
+		prepareRangeButton.addActionListener(this::prepareRangeButtonActionPerformed);
+        sendSignalButton.addActionListener(this::sendSignalButtonActionPerformed);
+        doneRangeButton.addActionListener(this::doneRangeButtonActionPerformed);
 	}
 
 	public ProfessionalHubClient getHubClient() {
@@ -270,7 +299,7 @@ public class ProfessionalHubGUI extends JFrame {
 		}.execute(); // swingWorker
 	} // getWorkerNotesButtonActionPerformed
 
-	// ***************CLIENT-STREAM checkInWorker***************
+	// ***************CLIENT-STREAM sendLabWork***************
 	private void prepareSendLabButtonActionPerformed(ActionEvent evt) {
 		resultPane.setText("Client stream prepared. Ready to send lab work snippets...\n\n");
 
@@ -324,4 +353,63 @@ public class ProfessionalHubGUI extends JFrame {
 		labRequestObserver = null; // reset for next use
 		resultPane.setText(resultPane.getText() + "Stream completed – waiting for server summary...\n\n");
 	} // doneLabButtonActionPerformed
+	
+	// ***************BI-DI-STREAM rangeCheck***************
+	private void prepareRangeButtonActionPerformed(ActionEvent event) {
+        resultPane.setText("Bi-directional stream prepared. Send signals one by one...\n\n");
+
+        StreamObserver<RangeCheckRes> responseObserver = new StreamObserver<>() {
+            @Override
+            public void onNext(RangeCheckRes response) {
+                resultPane.setText(resultPane.getText() +
+                        "Signal received! Proximity: " + response.getProximityStatus() +
+                        " >>> " + response.getStatusMessage() + "\n\n");
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                resultPane.setText(resultPane.getText() + "Error: " + t.getMessage() + "\n\n");
+            }
+
+            @Override
+            public void onCompleted() {
+                resultPane.setText(resultPane.getText() + "Bi-directional stream completed\n\n");
+            }
+        };
+
+        rangeRequestObserver = hubClient.getWorkshopAsyncStub().rangeCheck(responseObserver);
+    } // prepareRangeButtonActionPerformed
+	
+	private void sendSignalButtonActionPerformed(ActionEvent event) {
+        if (rangeRequestObserver == null) {
+            resultPane.setText("Click 'Prepare Bi-Di Stream' first!\n" + resultPane.getText());
+            return;
+        }
+
+        String signalText = signalField.getText().trim();
+        if (signalText.isEmpty()) {
+            resultPane.setText("Enter a signal strength!\n" + resultPane.getText());
+            return;
+        }
+
+        try {
+            float signal = Float.parseFloat(signalText);
+            RangeCheckReq req = RangeCheckReq.newBuilder().setSignalStrength(signal).build();
+            rangeRequestObserver.onNext(req);
+            resultPane.setText(resultPane.getText() + "Sent signal: " + signal + "\n");
+            signalField.setText("");
+        } catch (NumberFormatException ex) {
+            resultPane.setText("Invalid number! Use e.g. -45.5\n" + resultPane.getText());
+        }
+    } // sendSignalButtonActionPerformed
+	
+	private void doneRangeButtonActionPerformed(ActionEvent event) {
+        if (rangeRequestObserver == null) {
+            resultPane.setText("No active bi-di stream!\n" + resultPane.getText());
+            return;
+        }
+        rangeRequestObserver.onCompleted();
+        rangeRequestObserver = null;
+        resultPane.setText(resultPane.getText() + "Bi-di stream finished – waiting for final responses...\n\n");
+    } // doneRangeButtonActionPerformed
 } // ProfessionalHubGUI
