@@ -26,6 +26,7 @@ import javax.swing.border.TitledBorder;
 import com.generated.guardian.grpc.MonitorSafetyReq;
 import com.generated.guardian.grpc.MonitorSafetyRes;
 import com.generated.guardian.grpc.VerifyZoneSafetyReq;
+import com.generated.guardian.grpc.VerifyZoneSafetyRes;
 import com.generated.productivity.grpc.ReportTaskProgressReq;
 import com.generated.productivity.grpc.ReportTaskProgressRes;
 import com.generated.productivity.grpc.StreamProductivityReq;
@@ -302,25 +303,47 @@ public class ProfessionalHubGUI extends JFrame {
 
 		// ****UNARY section
 		JPanel guardUnary = new JPanel();
-        guardUnary.setBorder(new TitledBorder(null, "UNARY MonitorSafety", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		guardUnary.setBorder(
+				new TitledBorder(null, "UNARY MonitorSafety", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
 		// ---------- cheat code field ----------
-        JLabel lblGuardUnaryCheat = new JLabel("LOC-001");
-        lblGuardUnaryCheat.setForeground(Color.RED);
-        lblGuardUnaryCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
-        guardUnary.add(lblGuardUnaryCheat);
+		JLabel lblGuardUnaryCheat = new JLabel("LOC-001");
+		lblGuardUnaryCheat.setForeground(Color.RED);
+		lblGuardUnaryCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
+		guardUnary.add(lblGuardUnaryCheat);
 		// ----------------------------------------
-        
-        guardUnary.add(new JLabel("Location ID"));
-        locationIdField = new JTextField(15);
-        guardUnary.add(locationIdField);
-        monitorSafetyButton = new JButton("Monitor Safety");
-        guardUnary.add(monitorSafetyButton);
-        
-        guardianPanel.add(guardUnary);
-        
+
+		guardUnary.add(new JLabel("Location ID"));
+		locationIdField = new JTextField(15);
+		guardUnary.add(locationIdField);
+		monitorSafetyButton = new JButton("Monitor Safety");
+		guardUnary.add(monitorSafetyButton);
+
+		guardianPanel.add(guardUnary);
+
 		// ****BI-DI-STREAM section
-		// TODO:
+		JPanel guardBiDi = new JPanel();
+		guardBiDi.setBorder(new TitledBorder(null, "BI-DIRECTIONAL VerifyZoneSafety", TitledBorder.LEADING,
+				TitledBorder.TOP, null, null));
+
+		// ---------- cheat code field ----------
+		JLabel lblGuardBiCheat = new JLabel("ZONE-RED, ZONE-BLUE, etc.");
+		lblGuardBiCheat.setForeground(Color.RED);
+		lblGuardBiCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
+		guardBiDi.add(lblGuardBiCheat);
+		// ----------------------------------------
+
+		guardBiDi.add(new JLabel("Zone ID"));
+		zoneIdField = new JTextField(15);
+		guardBiDi.add(zoneIdField);
+		prepareZoneButton = new JButton("Prepare Bi-Di Stream");
+		guardBiDi.add(prepareZoneButton);
+		sendZoneButton = new JButton("Send Zone");
+		guardBiDi.add(sendZoneButton);
+		doneZoneButton = new JButton("Done");
+		guardBiDi.add(doneZoneButton);
+
+		guardianPanel.add(guardBiDi);
 
 		// ***************tabs***************
 		tabbedPane.addTab("Workshop", workshopPanel);
@@ -367,9 +390,11 @@ public class ProfessionalHubGUI extends JFrame {
 		// ***************guardian listeners***************
 		// --- unary
 		monitorSafetyButton.addActionListener(this::monitorSafetyButtonActionPerformed);
-		
-		// bi-directional stream
-		// TODO:
+
+		// --- bi-directional stream
+		prepareZoneButton.addActionListener(this::prepareZoneButtonActionPerformed);
+		sendZoneButton.addActionListener(this::sendZoneButtonActionPerformed);
+		doneZoneButton.addActionListener(this::doneZoneButtonActionPerformed);
 	}
 
 	public ProfessionalHubClient getHubClient() {
@@ -676,22 +701,74 @@ public class ProfessionalHubGUI extends JFrame {
 	// ==============================GUARDIAN==============================
 	// ***************UNARY MonitorSafety***************
 	private void monitorSafetyButtonActionPerformed(ActionEvent evt) {
-        String locationId = locationIdField.getText().trim();
-        if (locationId.isEmpty()) {
-            resultPane.setText("Please enter a Location ID!\n" + resultPane.getText());
-            return;
-        }
+		String locationId = locationIdField.getText().trim();
+		if (locationId.isEmpty()) {
+			resultPane.setText("Please enter a Location ID!\n" + resultPane.getText());
+			return;
+		}
 
-        MonitorSafetyReq req = MonitorSafetyReq.newBuilder().setLocationId(locationId).build();
+		MonitorSafetyReq req = MonitorSafetyReq.newBuilder().setLocationId(locationId).build();
 
-        try {
-            MonitorSafetyRes res = getHubClient().getGuardianBlockingStub().monitorSafety(req);
-            resultPane.setText("PPE Protocol for " + locationId + ":\n" + res.getPpeProtocol() + "\n\n" + resultPane.getText());
-        } catch (Exception e) {
-            resultPane.setText("Error: " + e.getMessage() + "\n\n" + resultPane.getText());
-        }
-    } // monitorSafetyButtonActionPerformed
+		try {
+			MonitorSafetyRes res = getHubClient().getGuardianBlockingStub().monitorSafety(req);
+			resultPane.setText(
+					"PPE Protocol for " + locationId + ":\n" + res.getPpeProtocol() + "\n\n" + resultPane.getText());
+		} catch (Exception e) {
+			resultPane.setText("Error: " + e.getMessage() + "\n\n" + resultPane.getText());
+		}
+	} // monitorSafetyButtonActionPerformed
 
 	// ***************B-DI-STREAM VerifyZoneSafety***************
-	// TODO:
+	private void prepareZoneButtonActionPerformed(ActionEvent evt) {
+		resultPane.setText("Bi-directional zone safety stream prepared.\nSend zones one by one...\n\n");
+
+		StreamObserver<VerifyZoneSafetyRes> responseObserver = new StreamObserver<>() {
+			@Override
+			public void onNext(VerifyZoneSafetyRes response) {
+				resultPane.setText(resultPane.getText() + "Safety update: " + response.getZoneInstruction() + "\n\n");
+			}
+
+			@Override
+			public void onError(Throwable t) {
+				resultPane.setText(resultPane.getText() + "Error: " + t.getMessage() + "\n\n");
+			}
+
+			@Override
+			public void onCompleted() {
+				resultPane.setText(resultPane.getText() + "Zone safety stream completed\n\n");
+			}
+		};
+
+		zoneRequestObserver = hubClient.getGuardianAsyncStub().verifyZoneSafety(responseObserver);
+	} // prepareZoneButtonActionPerformed
+
+	private void sendZoneButtonActionPerformed(ActionEvent evt) {
+		if (zoneRequestObserver == null) {
+			resultPane.setText("Click 'Prepare Bi-Di Stream' first!\n" + resultPane.getText());
+			return;
+		}
+
+		String zone = zoneIdField.getText().trim();
+		if (zone.isEmpty()) {
+			resultPane.setText("Enter a Zone ID!\n" + resultPane.getText());
+			return;
+		}
+
+		VerifyZoneSafetyReq req = VerifyZoneSafetyReq.newBuilder().setCurrentZoneId(zone).build();
+		zoneRequestObserver.onNext(req);
+
+		resultPane.setText(resultPane.getText() + "Sent zone: " + zone + "\n");
+		zoneIdField.setText("");
+	} // sendZoneButtonActionPerformed
+
+	private void doneZoneButtonActionPerformed(ActionEvent evt) {
+		if (zoneRequestObserver == null) {
+			resultPane.setText("No active zone stream!\n" + resultPane.getText());
+			return;
+		}
+		zoneRequestObserver.onCompleted();
+		zoneRequestObserver = null;
+		resultPane.setText(resultPane.getText() + "Zone stream finished\n\n");
+	} // doneZoneButtonActionPerformed
+
 } // ProfessionalHubGUI
