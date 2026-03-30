@@ -23,6 +23,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.TitledBorder;
 
+import com.generated.guardian.grpc.MonitorSafetyReq;
+import com.generated.guardian.grpc.MonitorSafetyRes;
+import com.generated.guardian.grpc.VerifyZoneSafetyReq;
 import com.generated.productivity.grpc.ReportTaskProgressReq;
 import com.generated.productivity.grpc.ReportTaskProgressRes;
 import com.generated.productivity.grpc.StreamProductivityReq;
@@ -77,11 +80,19 @@ public class ProfessionalHubGUI extends JFrame {
 	private JButton sendMinutesButton;
 	private JButton doneHoursButton;
 
-	// needed for send and done buttons
+	// *****Guardian fields
+	private JTextField locationIdField;
+	private JTextField zoneIdField;
+	private JButton monitorSafetyButton;
+	private JButton prepareZoneButton;
+	private JButton sendZoneButton;
+	private JButton doneZoneButton;
+
+	// observers needed for send and done buttons
 	private StreamObserver<SendLabWorkReq> labRequestObserver;
 	private StreamObserver<RangeCheckReq> rangeRequestObserver;
 	private StreamObserver<VerifyHoursReq> hoursRequestObserver;
-	private JPanel prodPanel;
+	private StreamObserver<VerifyZoneSafetyReq> zoneRequestObserver;
 
 	public ProfessionalHubGUI() {
 		hubClient = new ProfessionalHubClient();
@@ -285,10 +296,36 @@ public class ProfessionalHubGUI extends JFrame {
 
 		productivityPanel.add(prodClientStream);
 
+		// ***************guardian tab***************
+		JPanel guardianPanel = new JPanel();
+		guardianPanel.setLayout(new GridLayout(0, 1, 0, 10));
+
+		// ****UNARY section
+		JPanel guardUnary = new JPanel();
+        guardUnary.setBorder(new TitledBorder(null, "UNARY MonitorSafety", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+
+		// ---------- cheat code field ----------
+        JLabel lblGuardUnaryCheat = new JLabel("LOC-001");
+        lblGuardUnaryCheat.setForeground(Color.RED);
+        lblGuardUnaryCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
+        guardUnary.add(lblGuardUnaryCheat);
+		// ----------------------------------------
+        
+        guardUnary.add(new JLabel("Location ID"));
+        locationIdField = new JTextField(15);
+        guardUnary.add(locationIdField);
+        monitorSafetyButton = new JButton("Monitor Safety");
+        guardUnary.add(monitorSafetyButton);
+        
+        guardianPanel.add(guardUnary);
+        
+		// ****BI-DI-STREAM section
+		// TODO:
+
 		// ***************tabs***************
 		tabbedPane.addTab("Workshop", workshopPanel);
 		tabbedPane.addTab("Productivity", productivityPanel);
-		tabbedPane.addTab("Guardian", new JPanel());
+		tabbedPane.addTab("Guardian", guardianPanel);
 
 		// ***************result pane***************
 		resultPane.setEditable(false);
@@ -328,6 +365,10 @@ public class ProfessionalHubGUI extends JFrame {
 		doneHoursButton.addActionListener(this::doneHoursButtonActionPerformed);
 
 		// ***************guardian listeners***************
+		// --- unary
+		monitorSafetyButton.addActionListener(this::monitorSafetyButtonActionPerformed);
+		
+		// bi-directional stream
 		// TODO:
 	}
 
@@ -634,7 +675,22 @@ public class ProfessionalHubGUI extends JFrame {
 
 	// ==============================GUARDIAN==============================
 	// ***************UNARY MonitorSafety***************
-	// TODO:
+	private void monitorSafetyButtonActionPerformed(ActionEvent evt) {
+        String locationId = locationIdField.getText().trim();
+        if (locationId.isEmpty()) {
+            resultPane.setText("Please enter a Location ID!\n" + resultPane.getText());
+            return;
+        }
+
+        MonitorSafetyReq req = MonitorSafetyReq.newBuilder().setLocationId(locationId).build();
+
+        try {
+            MonitorSafetyRes res = getHubClient().getGuardianBlockingStub().monitorSafety(req);
+            resultPane.setText("PPE Protocol for " + locationId + ":\n" + res.getPpeProtocol() + "\n\n" + resultPane.getText());
+        } catch (Exception e) {
+            resultPane.setText("Error: " + e.getMessage() + "\n\n" + resultPane.getText());
+        }
+    } // monitorSafetyButtonActionPerformed
 
 	// ***************B-DI-STREAM VerifyZoneSafety***************
 	// TODO:
