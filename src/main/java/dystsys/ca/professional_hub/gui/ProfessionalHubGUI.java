@@ -28,6 +28,7 @@ import com.generated.workshop.grpc.CheckInWorkerRes;
 import com.generated.workshop.grpc.GetWorkerNotesReq;
 import com.generated.workshop.grpc.GetWorkerNotesRes;
 import com.generated.workshop.grpc.SendLabWorkReq;
+import com.generated.workshop.grpc.SendLabWorkRes;
 
 import dystsys.ca.professional_hub.clients.ProfessionalHubClient;
 import io.grpc.stub.StreamObserver;
@@ -47,7 +48,7 @@ public class ProfessionalHubGUI extends JFrame {
 	private JTextField workshopIdField;
 	private JTextField getNotesWorkshopIdField;
 	private JTextField labSnippetField;
-	
+
 	private JButton checkInButton;
 	private JButton getNotesButton;
 	private JButton prepareSendLabButton;
@@ -55,7 +56,7 @@ public class ProfessionalHubGUI extends JFrame {
 	private JButton doneLabButton;
 
 	private StreamObserver<SendLabWorkReq> labRequestObserver; // this is needed for send and done buttons
-	
+
 	public ProfessionalHubGUI() {
 		hubClient = new ProfessionalHubClient();
 
@@ -88,10 +89,12 @@ public class ProfessionalHubGUI extends JFrame {
 		unary.setBorder(
 				new TitledBorder(null, "UNARY CheckInWorker", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
-		JLabel lblUnaryWorkshopCheat = new JLabel("W-1001 & WS-001"); // cheat code for testing
+		// ----------cheat code field----------
+		JLabel lblUnaryWorkshopCheat = new JLabel("W-1001 & WS-001");
 		lblUnaryWorkshopCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
 		lblUnaryWorkshopCheat.setForeground(new Color(255, 0, 0));
 		unary.add(lblUnaryWorkshopCheat);
+		// ----------------------------------------
 
 		// workerId label and text field
 		unary.add(new JLabel("Worker ID"));
@@ -113,11 +116,13 @@ public class ProfessionalHubGUI extends JFrame {
 		JPanel server_streaming = new JPanel();
 		server_streaming.setBorder(new TitledBorder(null, "SERVER-STREAM GetWorkerNotes", TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
-		
-		JLabel lblServerStreamWorkshopCheat = new JLabel("WS-001"); // cheat code for testing
+
+		// ----------cheat code field----------
+		JLabel lblServerStreamWorkshopCheat = new JLabel("WS-001");
 		lblServerStreamWorkshopCheat.setForeground(Color.RED);
 		lblServerStreamWorkshopCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
 		server_streaming.add(lblServerStreamWorkshopCheat);
+		// ----------------------------------------
 
 		// workshopId label and text field
 		server_streaming.add(new JLabel("Workshop ID"));
@@ -130,15 +135,40 @@ public class ProfessionalHubGUI extends JFrame {
 		server_streaming.add(getNotesButton);
 
 		workshopPanel.add(server_streaming);
-		
+
 		// *****CLIENT-STREAM section
-		// TODO:
+		JPanel client_streaming = new JPanel();
+		client_streaming.setBorder(new TitledBorder(null, "CLIENT-STREAM SendLabWork", TitledBorder.LEADING,
+				TitledBorder.TOP, null, null));
+
+		// ---------- cheat code field ----------
+		JLabel lblClientCheat = new JLabel("Module A: Initialized safety protocols.");
+		lblClientCheat.setForeground(Color.RED);
+		lblClientCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
+		client_streaming.add(lblClientCheat);
+		// ----------------------------------------
+
+		client_streaming.add(new JLabel("Work Snippet"));
+		labSnippetField = new JTextField();
+		labSnippetField.setColumns(30);
+		client_streaming.add(labSnippetField);
+
+		prepareSendLabButton = new JButton("Prepare Client Stream");
+		sendLabSnippetButton = new JButton("Send Snippet");
+		doneLabButton = new JButton("Done (Finish Stream)");
+
+		client_streaming.add(prepareSendLabButton);
+		client_streaming.add(sendLabSnippetButton);
+		client_streaming.add(doneLabButton);
+
+		workshopPanel.add(client_streaming);
 
 		// *****BI-DI-STREAM section
 		// TODO:
 
 		// ***************tabs***************
 		tabbedPane.addTab("Workshop", workshopPanel);
+
 		// TODO:
 		tabbedPane.addTab("Productivity", new JPanel());
 		tabbedPane.addTab("Guardian", new JPanel());
@@ -159,6 +189,9 @@ public class ProfessionalHubGUI extends JFrame {
 		// ***************action listeners***************
 		checkInButton.addActionListener(this::checkInWorkerButtonActionPerformed);
 		getNotesButton.addActionListener(this::getWorkerNotesButtonActionPerformed);
+		prepareSendLabButton.addActionListener(this::prepareSendLabButtonActionPerformed);
+		sendLabSnippetButton.addActionListener(this::sendLabSnippetButtonActionPerformed);
+		doneLabButton.addActionListener(this::doneLabButtonActionPerformed);
 	}
 
 	public ProfessionalHubClient getHubClient() {
@@ -236,4 +269,59 @@ public class ProfessionalHubGUI extends JFrame {
 
 		}.execute(); // swingWorker
 	} // getWorkerNotesButtonActionPerformed
+
+	// ***************CLIENT-STREAM checkInWorker***************
+	private void prepareSendLabButtonActionPerformed(ActionEvent evt) {
+		resultPane.setText("Client stream prepared. Ready to send lab work snippets...\n\n");
+
+		StreamObserver<SendLabWorkRes> responseObserver = new StreamObserver<>() {
+			@Override
+			public void onNext(SendLabWorkRes response) {
+				resultPane.setText(resultPane.getText() + "Server finished!\nSubmission summary: "
+						+ response.getSubmssionSummary() + " tasks received\n\n");
+			}
+
+			@Override
+			public void onError(Throwable t) {
+				resultPane.setText(resultPane.getText() + "Error: " + t.getMessage() + "\n\n");
+			}
+
+			@Override
+			public void onCompleted() {
+				resultPane.setText(resultPane.getText() + "*** Server acknowledgement ***\n\n");
+			}
+		};
+
+		labRequestObserver = hubClient.getWorkshopAsyncStub().sendLabWork(responseObserver);
+	} // prepareSendLabButtonActionPerformed
+
+	private void sendLabSnippetButtonActionPerformed(ActionEvent evt) {
+		if (labRequestObserver == null) {
+			resultPane.setText("Please click 'Prepare Client Stream' first!\n" + resultPane.getText());
+			return;
+		}
+
+		String snippet = labSnippetField.getText().trim();
+		if (snippet.isEmpty()) {
+			resultPane.setText("Please enter a work snippet!\n" + resultPane.getText());
+			return;
+		}
+
+		SendLabWorkReq req = SendLabWorkReq.newBuilder().setWorkSnippet(snippet).build();
+		labRequestObserver.onNext(req);
+
+		resultPane.setText(resultPane.getText() + "Sent snippet: " + snippet + "\n");
+		labSnippetField.setText(""); // clear for next snippet
+	} // sendLabSnippetButtonActionPerformed
+
+	private void doneLabButtonActionPerformed(ActionEvent evt) {
+		if (labRequestObserver == null) {
+			resultPane.setText("No active stream to finish!\n" + resultPane.getText());
+			return;
+		}
+
+		labRequestObserver.onCompleted();
+		labRequestObserver = null; // reset for next use
+		resultPane.setText(resultPane.getText() + "Stream completed – waiting for server summary...\n\n");
+	} // doneLabButtonActionPerformed
 } // ProfessionalHubGUI
