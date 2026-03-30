@@ -25,6 +25,8 @@ import javax.swing.border.TitledBorder;
 
 import com.generated.productivity.grpc.ReportTaskProgressReq;
 import com.generated.productivity.grpc.ReportTaskProgressRes;
+import com.generated.productivity.grpc.StreamProductivityReq;
+import com.generated.productivity.grpc.StreamProductivityRes;
 import com.generated.productivity.grpc.VerifyHoursReq;
 import com.generated.workshop.grpc.CheckInWorkerReq;
 import com.generated.workshop.grpc.CheckInWorkerRes;
@@ -215,6 +217,7 @@ public class ProfessionalHubGUI extends JFrame {
 		JPanel productivityPanel = new JPanel();
 		productivityPanel.setLayout(new GridLayout(0, 1, 0, 10));
 
+		// ****UNARY section
 		JPanel prodUnary = new JPanel();
 		prodUnary.setBorder(
 				new TitledBorder(null, "UNARY ReportTaskProgress", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -236,6 +239,25 @@ public class ProfessionalHubGUI extends JFrame {
 		prodUnary.add(reportProgressButton);
 
 		productivityPanel.add(prodUnary);
+
+		// ****SERVER-STREAM section
+		JPanel prodServerStream = new JPanel();
+		prodServerStream.setBorder(new TitledBorder(null, "SERVER-STREAM StreamProductivity", TitledBorder.LEADING,
+				TitledBorder.TOP, null, null));
+
+		// ---------- cheat code field ----------
+		JLabel lblProdServerCheat = new JLabel("S-AAA");
+		lblProdServerCheat.setForeground(Color.RED);
+		lblProdServerCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
+		prodServerStream.add(lblProdServerCheat);
+		// ----------------------------------------
+
+		prodServerStream.add(new JLabel("Site ID"));
+		siteIdField = new JTextField(15);
+		prodServerStream.add(siteIdField);
+		streamProductivityButton = new JButton("Stream Productivity");
+		prodServerStream.add(streamProductivityButton);
+		productivityPanel.add(prodServerStream);
 
 		// ***************tabs***************
 		tabbedPane.addTab("Workshop", workshopPanel);
@@ -268,10 +290,13 @@ public class ProfessionalHubGUI extends JFrame {
 		prepareRangeButton.addActionListener(this::prepareRangeButtonActionPerformed);
 		sendSignalButton.addActionListener(this::sendSignalButtonActionPerformed);
 		doneRangeButton.addActionListener(this::doneRangeButtonActionPerformed);
-		
+
 		// ***************productivity listeners***************
+		// --- unary
 		reportProgressButton.addActionListener(this::reportProgressButtonActionPerformed);
-		
+		// -- server-stream
+		streamProductivityButton.addActionListener(this::streamProductivityButtonActionPerformed);
+
 		// ***************guardian listeners***************
 		// TODO:
 	}
@@ -469,38 +494,67 @@ public class ProfessionalHubGUI extends JFrame {
 	// ==============================PRODUCTIVITY==============================
 	// ***************UNARY ReportTaskProgress***************
 	private void reportProgressButtonActionPerformed(ActionEvent event) {
-        String taskId = taskIdField.getText().trim();
-        String percentText = percentField.getText().trim();
+		String taskId = taskIdField.getText().trim();
+		String percentText = percentField.getText().trim();
 
-        if (taskId.isEmpty() || percentText.isEmpty()) {
-            resultPane.setText("Please fill in Task ID and Percent!\n" + resultPane.getText());
-            return;
-        }
+		if (taskId.isEmpty() || percentText.isEmpty()) {
+			resultPane.setText("Please fill in Task ID and Percent!\n" + resultPane.getText());
+			return;
+		}
 
-        int percent = Integer.parseInt(percentText);
-        ReportTaskProgressReq req = ReportTaskProgressReq.newBuilder()
-                .setTaskId(taskId)
-                .setPercentComplete(percent)
-                .build();
+		int percent = Integer.parseInt(percentText);
+		ReportTaskProgressReq req = ReportTaskProgressReq.newBuilder().setTaskId(taskId).setPercentComplete(percent)
+				.build();
 
-        try {
-            ReportTaskProgressRes res = getHubClient().getProductivityBlockingStub().reportTaskProgress(req);
-            resultPane.setText(res.getAcknowledge() + "\n\n" + resultPane.getText());
-        } catch (Exception e) {
-            resultPane.setText("Error: " + e.getMessage() + "\n\n" + resultPane.getText());
-        }
-    } // reportProgressButtonActionPerformed
-	
+		try {
+			ReportTaskProgressRes res = getHubClient().getProductivityBlockingStub().reportTaskProgress(req);
+			resultPane.setText(res.getAcknowledge() + "\n\n" + resultPane.getText());
+		} catch (Exception e) {
+			resultPane.setText("Error: " + e.getMessage() + "\n\n" + resultPane.getText());
+		}
+	} // reportProgressButtonActionPerformed
+
 	// ***************SERVER-STREAM StreamProductivity***************
-	// TODO:
-	
+	private void streamProductivityButtonActionPerformed(ActionEvent event) {
+		String siteId = siteIdField.getText().trim();
+		if (siteId.isEmpty()) {
+			resultPane.setText("Please enter a Site ID!\n" + resultPane.getText());
+			return;
+		}
+
+		StreamProductivityReq req = StreamProductivityReq.newBuilder().setSiteId(siteId).build();
+		resultPane.setText("Receiving productivity updates for site " + siteId + "...\n\n");
+
+		new SwingWorker<Void, String>() {
+			@Override
+			protected Void doInBackground() throws Exception {
+				Iterator<StreamProductivityRes> iterator = getHubClient().getProductivityBlockingStub()
+						.streamProductivity(req);
+				
+				while (iterator.hasNext()) {
+					String update = iterator.next().getWorkerUpdate();
+					publish(update);
+					Thread.sleep(1200);
+				}
+				return null;
+			}
+
+			@Override
+			protected void process(List<String> chunks) {
+				for (String update : chunks) {
+					resultPane.setText(resultPane.getText() + ">>> " + update + "\n\n");
+				}
+			}
+		}.execute();
+	} // streamProductivityButtonActionPerformed
+
 	// ***************CLIENT-STREAM VerifyHours***************
 	// TODO:
 
 	// ==============================GUARDIAN==============================
 	// ***************UNARY MonitorSafety***************
 	// TODO:
-	
+
 	// ***************B-DI-STREAM VerifyZoneSafety***************
 	// TODO:
 } // ProfessionalHubGUI
