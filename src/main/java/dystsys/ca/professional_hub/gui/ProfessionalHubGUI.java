@@ -28,6 +28,7 @@ import com.generated.productivity.grpc.ReportTaskProgressRes;
 import com.generated.productivity.grpc.StreamProductivityReq;
 import com.generated.productivity.grpc.StreamProductivityRes;
 import com.generated.productivity.grpc.VerifyHoursReq;
+import com.generated.productivity.grpc.VerifyHoursRes;
 import com.generated.workshop.grpc.CheckInWorkerReq;
 import com.generated.workshop.grpc.CheckInWorkerRes;
 import com.generated.workshop.grpc.GetWorkerNotesReq;
@@ -257,7 +258,32 @@ public class ProfessionalHubGUI extends JFrame {
 		prodServerStream.add(siteIdField);
 		streamProductivityButton = new JButton("Stream Productivity");
 		prodServerStream.add(streamProductivityButton);
+
 		productivityPanel.add(prodServerStream);
+
+		// ****CLIENT-STREAM section
+		JPanel prodClientStream = new JPanel();
+		prodClientStream.setBorder(new TitledBorder(null, "CLIENT-STREAM VerifyHours", TitledBorder.LEADING,
+				TitledBorder.TOP, null, null));
+
+		// ---------- cheat code field ----------
+		JLabel lblProdClientCheat = new JLabel("30, 25, 20, ...");
+		lblProdClientCheat.setForeground(Color.RED);
+		lblProdClientCheat.setFont(new Font("Tahoma", Font.BOLD, 14));
+		prodClientStream.add(lblProdClientCheat);
+		// ----------------------------------------
+
+		prodClientStream.add(new JLabel("Minutes Worked"));
+		minutesField = new JTextField(12);
+		prodClientStream.add(minutesField);
+		prepareVerifyHoursButton = new JButton("Prepare Hours Stream");
+		prodClientStream.add(prepareVerifyHoursButton);
+		sendMinutesButton = new JButton("Send Minutes");
+		prodClientStream.add(sendMinutesButton);
+		doneHoursButton = new JButton("Get Total");
+		prodClientStream.add(doneHoursButton);
+
+		productivityPanel.add(prodClientStream);
 
 		// ***************tabs***************
 		tabbedPane.addTab("Workshop", workshopPanel);
@@ -296,6 +322,10 @@ public class ProfessionalHubGUI extends JFrame {
 		reportProgressButton.addActionListener(this::reportProgressButtonActionPerformed);
 		// -- server-stream
 		streamProductivityButton.addActionListener(this::streamProductivityButtonActionPerformed);
+		// -- client-stream
+		prepareVerifyHoursButton.addActionListener(this::prepareVerifyHoursButtonActionPerformed);
+		sendMinutesButton.addActionListener(this::sendMinutesButtonActionPerformed);
+		doneHoursButton.addActionListener(this::doneHoursButtonActionPerformed);
 
 		// ***************guardian listeners***************
 		// TODO:
@@ -530,7 +560,7 @@ public class ProfessionalHubGUI extends JFrame {
 			protected Void doInBackground() throws Exception {
 				Iterator<StreamProductivityRes> iterator = getHubClient().getProductivityBlockingStub()
 						.streamProductivity(req);
-				
+
 				while (iterator.hasNext()) {
 					String update = iterator.next().getWorkerUpdate();
 					publish(update);
@@ -549,7 +579,58 @@ public class ProfessionalHubGUI extends JFrame {
 	} // streamProductivityButtonActionPerformed
 
 	// ***************CLIENT-STREAM VerifyHours***************
-	// TODO:
+	private void prepareVerifyHoursButtonActionPerformed(ActionEvent evt) {
+		resultPane.setText("Client stream prepared. Ready to send minutes worked...\n\n");
+
+		StreamObserver<VerifyHoursRes> responseObserver = new StreamObserver<>() {
+			@Override
+			public void onNext(VerifyHoursRes response) {
+				resultPane.setText(resultPane.getText() + "Total hours: " + response.getTotalHours() + "\n\n");
+			}
+
+			@Override
+			public void onError(Throwable t) {
+				resultPane.setText(resultPane.getText() + "Error: " + t.getMessage() + "\n\n");
+			}
+
+			@Override
+			public void onCompleted() {
+				resultPane.setText(resultPane.getText() + "Hours verification completed\n\n");
+			}
+		};
+
+		hoursRequestObserver = hubClient.getProductivityAsyncStub().verifyHours(responseObserver);
+	} // prepareVerifyHoursButtonActionPerformed
+
+	private void sendMinutesButtonActionPerformed(ActionEvent event) {
+		if (hoursRequestObserver == null) {
+			resultPane.setText("Click 'Prepare Hours Stream' first!\n" + resultPane.getText());
+			return;
+		}
+
+		String minutesText = minutesField.getText().trim();
+		if (minutesText.isEmpty()) {
+			resultPane.setText("Enter minutes worked!\n" + resultPane.getText());
+			return;
+		}
+
+		int minutes = Integer.parseInt(minutesText);
+		VerifyHoursReq req = VerifyHoursReq.newBuilder().setMinutesWorked(minutes).build();
+		hoursRequestObserver.onNext(req);
+
+		resultPane.setText(resultPane.getText() + "Sent " + minutes + " minutes\n");
+		minutesField.setText("");
+	} // sendMinutesButtonActionPerformed
+
+	private void doneHoursButtonActionPerformed(ActionEvent event) {
+		if (hoursRequestObserver == null) {
+			resultPane.setText("No active hours stream!\n" + resultPane.getText());
+			return;
+		}
+		hoursRequestObserver.onCompleted();
+		hoursRequestObserver = null;
+		resultPane.setText(resultPane.getText() + "Hours stream finished – waiting for total...\n\n");
+	} // doneHoursButtonActionPerformed
 
 	// ==============================GUARDIAN==============================
 	// ***************UNARY MonitorSafety***************
